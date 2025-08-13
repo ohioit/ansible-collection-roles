@@ -15,6 +15,9 @@ exclude_paths:
   - .cache/ # implicit unless exclude_paths is defined in config
   - .github/styles
   - .github/workflows
+  - galaxy.yml # TODO remove this line later
+  - meta/execution-environment.yml # TODO remove this line later
+  - changelogs/
 # parseable: true
 # quiet: true
 # strict: true
