@@ -130,3 +130,33 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Ansible cache files
+.ansible/
+
+# Ansible facts cache
+.ansible_facts
+
+# Ansible log files
+ansible.log
+ansible.log.*
+ansible-navigator.log
+ansible-navigator.log.*
+*-artifact-*
+
+# Temporary files
+*.retry
+
+# Ansible Vault password files
+.vault-pass*
+.vault_pass*
+
+# Editor/IDE specific files
+*.swp
+*.swo
+*.pyc
+*.pyo
+*.idea/
+
+# Generated files
+.DS_Store

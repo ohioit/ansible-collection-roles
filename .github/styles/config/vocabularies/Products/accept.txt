@@ -1,0 +1,13 @@
+(?i)EditorConfig
+(?i)git
+(?i)logrotate
+(?i)Todo
+[Aa]nsible
+[Rr]syslog
+Active Directory
+GitHub
+Isilon
+Jinja
+Kerberos
+Markdown
+Todo Tree
