@@ -20,12 +20,12 @@ on:
 jobs:
   docsite:
     name: Lint extra docsite docs and links
+    runs-on: ubuntu-latest
+    if: github.repository == 'ohioit/ohioit.roles'
     permissions:
       contents: read
-    runs-on: ubuntu-latest
     steps:
-
-      - name: Check out code
+      - name: Checkout
         uses: actions/checkout@v5
 
       - name: Set up Python

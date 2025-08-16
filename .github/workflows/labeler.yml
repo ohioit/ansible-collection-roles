@@ -16,12 +16,15 @@ jobs:
   labeler:
     name: Labeler
     runs-on: ubuntu-latest
+    if: github.repository == 'ohioit/ohioit.roles'
     permissions:
       contents: read
       issues: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout
+        uses: actions/checkout@v5
+
       - name: Add labels to pull request
         uses: actions/labeler@v5
         with:
