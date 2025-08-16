@@ -1,10 +1,10 @@
 ---
 # README FIRST
-# 1. Subscribe to https://github.com/ansible-collections/news-for-maintainers
-#    (click the Watch button on the homepage > Custom > Issues)
+# 1. Subscribe to https://forum.ansible.com/tags/c/project/7/news-for-maintainers
 #    and keep this matrix up to date in accordance to related announcements.
 #    Timely add new ansible-core versions and consider dropping support
 #    and testing against its EOL versions.
+#    https://docs.ansible.com/ansible/latest/reference_appendices/release_and_maintenance.html
 # 2. If your collection repository is under the ansible-collections org,
 #    please keep in mind that the number of GHA jobs is limited
 #    and shared across all the collections in the org.
@@ -65,6 +65,7 @@ jobs:
 
   sanity:
     name: Sanity (Ⓐ${{ matrix.ansible }})
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         ansible:
@@ -77,16 +78,14 @@ jobs:
           # that two different versions of ansible-test use the same sanity test
           # ignore.txt file.
           # Add new versions announced in
-          # https://github.com/ansible-collections/news-for-maintainers in a timely manner,
+          # https://forum.ansible.com/tags/c/project/7/news-for-maintainers in a timely manner,
           # consider dropping testing against EOL versions and versions you don't support.
           - stable-2.16
           - stable-2.17
           - stable-2.18
+          - stable-2.19
           - devel
         # - milestone
-
-    runs-on: ubuntu-latest
-
     steps:
       # Run sanity tests inside a Docker container.
       # The docker container has all the pinned dependencies that are
@@ -118,23 +117,22 @@ jobs:
 # https://docs.ansible.com/ansible/latest/dev_guide/testing_units.html
 
   units:
-    runs-on: ubuntu-latest
-
     name: Units (Ⓐ${{ matrix.ansible }})
+    runs-on: ubuntu-latest
     strategy:
       # As soon as the first unit test fails, cancel the others to free up the CI queue
       fail-fast: true
       matrix:
         ansible:
           # Add new versions announced in
-          # https://github.com/ansible-collections/news-for-maintainers in a timely manner,
+          # https://forum.ansible.com/tags/c/project/7/news-for-maintainers in a timely manner,
           # consider dropping testing against EOL versions and versions you don't support.
           - stable-2.16
           - stable-2.17
           - stable-2.18
+          - stable-2.19
           - devel
         # - milestone
-
     steps:
       - name: >-
           Perform unit testing against
@@ -170,9 +168,8 @@ jobs:
 # https://github.com/ansible-collections/community.zabbix/tree/master/.github/workflows
 
   integration:
-    runs-on: ubuntu-latest
-
     name: I (Ⓐ${{ matrix.ansible }}+py${{ matrix.python }})
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -188,7 +185,7 @@ jobs:
           - '3.13'
         include:
           # Add new versions announced in
-          # https://github.com/ansible-collections/news-for-maintainers in a timely manner,
+          # https://forum.ansible.com/tags/c/project/7/news-for-maintainers in a timely manner,
           # consider dropping testing against EOL versions and versions you don't support.
           # ansible-core 2.16
           - ansible: stable-2.16
@@ -233,8 +230,19 @@ jobs:
             python: '3.12'
           - ansible: stable-2.18
             python: '3.13'
-
-
+          # ansible-core 2.19
+          - ansible: stable-2.19
+            python: '3.8'
+          - ansible: stable-2.19
+            python: '3.9'
+          - ansible: stable-2.19
+            python: '3.10'
+          - ansible: stable-2.19
+            python: '3.11'
+          - ansible: stable-2.19
+            python: '3.12'
+          - ansible: stable-2.19
+            python: '3.13'
     steps:
       - name: >-
           Perform integration testing against
@@ -261,19 +269,15 @@ jobs:
           # https://github.com/ansible-community/ansible-test-gh-action#pull-request-change-detection
           pull-request-change-detection: false
 
-
   check:  # This job does nothing and is only used for the branch protection
           # or multi-stage CI jobs, like making sure that all tests pass before
           # a publishing job is started.
+    runs-on: ubuntu-latest
     if: always()
-
     needs:
       - sanity
       - units
       - integration
-
-    runs-on: ubuntu-latest
-
     steps:
       - name: Decide whether the needed jobs succeeded or failed
         uses: re-actors/alls-green@release/v1
