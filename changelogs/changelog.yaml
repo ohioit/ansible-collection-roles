@@ -1,3 +1,9 @@
 ---
 ancestor: null
-releases: {}
+releases:
+  0.1.0:
+    changes:
+      release_summary: Pre-release. Testing the workflows
+    fragments:
+      - 0.0.1.yml
+    release_date: '2025-08-18'

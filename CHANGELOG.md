@@ -1,5 +1,14 @@
-Will be updated by antsibull-changelog. Do not edit this manually!
+# OHIOIT Roles Release Notes
 
-See https://ansible.readthedocs.io/projects/antsibull-changelog/changelogs/ for information on how to use antsibull-changelog.
+**Topics**
 
-Check out `changelogs/config.yaml` for its configuration. You need to change at least the `title` field in there.
+- <a href="#v0-1-0">v0\.1\.0</a>
+    - <a href="#release-summary">Release Summary</a>
+
+<a id="v0-1-0"></a>
+## v0\.1\.0
+
+<a id="release-summary"></a>
+### Release Summary
+
+Pre\-release\. Testing the workflows
