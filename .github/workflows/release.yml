@@ -1,0 +1,70 @@
+---
+name: New Release
+
+on:  # yamllint disable-line rule:truthy
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
+
+jobs:
+  generate_changelog:
+    name: Create release draft
+    runs-on: ubuntu-latest
+    if: github.repository == 'ohioit/ohioit.roles'
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Get previous tag
+        id: previoustag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+
+      - name: Calculate next version
+        id: version
+        uses: patrickjahns/version-drafter-action@v1
+
+      - name: Generate changelog
+        uses: charmixer/auto-changelog-action@v1
+        with:
+          token: ${{ github.token }}
+          future_release: ${{ steps.version.outputs.next-version }}
+          # this excludes all versions prior to the collection-release
+          # since they break the changelog generation with the error:
+          # "No common ancestor between ... and $version"
+          exclude_tags_regex: '^[0-6]\.\d\.\d'
+          # issue_line_labels: mysql_hardening,os_hardening,ssh_hardening,nginx_hardening
+
+      - name: Commit changelog
+        uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          commit_message: Update CHANGELOG.md
+          file_pattern: CHANGELOG.md
+          commit_user_name: "OHIOIT CI"
+          commit_user_email: "oit-sea@ohio.edu"
+
+      - name: Prepare release body
+        id: body
+        run: |
+          sed '/## \[${{ steps.previoustag.outputs.tag }}\]/Q' CHANGELOG.md > CHANGELOGRELEASE.md
+          echo "content<<EOF" >> $GITHUB_OUTPUT
+          cat CHANGELOGRELEASE.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Delete old drafts
+        uses: hugo19941994/delete-draft-releases@v2.0.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Create release draft
+        uses: softprops/action-gh-release@v2
+        with:
+          body: ${{ steps.body.outputs.content }}
+          draft: true
+          name: ${{ steps.version.outputs.next-version }}
+          tag_name: ${{ steps.version.outputs.next-version }}
