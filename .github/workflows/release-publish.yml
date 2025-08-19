@@ -1,0 +1,62 @@
+---
+name: Release Publish
+
+on:
+  workflow_dispatch:
+  release:
+    types:
+      - published
+
+jobs:
+  publish_release:
+    name: Publish release
+    runs-on: ubuntu-latest
+    if: github.repository == 'ohioit/ohioit.roles'
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install Ansible packages
+        run: |
+          pipx install ansible-core
+          pipx install antsibull-changelog
+
+      - name: Finalize changelog
+        run: |
+          antsibull-changelog release
+
+      - name: Create PR for archived fragments and changelog
+        id: create_pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ github.token }}
+          branch: release-fragments/${{ github.event.release.tag_name }}
+          title: "Archive changelog fragments for release ${{ github.event.release.tag_name }}"
+          body: |
+            This PR archives the changelog fragments used in release ${{ github.event.release.tag_name }}
+            and updates all changelog files.
+          add-paths: |
+            CHANGELOG.*
+            changelogs/changelog.yaml
+            changelogs/fragments/*
+
+      - name: Enable Pull Request Automerge
+        run: gh pr merge ${{ steps.create_pr.outputs.pull-request-number }} --merge --auto
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Build collection
+        run: ansible-galaxy collection build
+
+      # - name: Publish to Ansible Galaxy
+      #   run: ansible-galaxy collection publish *.tar.gz --api-key ${{ secrets.CSI_GALAXY_API_KEY }}

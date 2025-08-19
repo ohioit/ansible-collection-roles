@@ -1,0 +1,98 @@
+---
+name: Release Prepare
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'CHANGELOG.*'
+      - 'changelogs/**'
+      - 'galaxy.yml'
+
+jobs:
+  prepare_release:
+    name: Create release draft
+    runs-on: ubuntu-latest
+    if: github.repository == 'ohioit/ohioit.roles'
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install antsibull-changelog
+        run: pipx install antsibull-changelog
+
+      - name: Determine version bump type
+        id: bump
+        run: |
+          bump="patch"
+          if grep -q "major:" changelogs/fragments/*.yml; then
+            bump="major"
+          elif grep -q "minor:" changelogs/fragments/*.yml; then
+            bump="minor"
+          fi
+          echo "bump=$bump" >> "$GITHUB_OUTPUT"
+
+      - name: Calculate next version
+        id: version
+        uses: anothrNick/github-tag-action@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DEFAULT_BUMP: ${{ steps.bump.outputs.bump }}
+          DRY_RUN: true
+
+      - name: Echo calculated version
+        run: |
+          echo "version: ${{ steps.version.outputs.new_tag }}"
+
+      - name: Update galaxy.yml version
+        run: |
+          sed -i "s/^version:.*/version: ${{ steps.version.outputs.new_tag }}/" galaxy.yml
+          echo "Updated galaxy.yml to version ${{ steps.version.outputs.new_tag }}"
+
+      - name: Generate changelog
+        run: |
+          antsibull-changelog generate
+
+      - name: Commit updated files and open pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ github.token }}
+          add-paths: |
+            galaxy.yml
+            CHANGELOG.*
+            changelogs/changelog.yaml
+          commit-message: "Prepare release ${{ steps.version.outputs.new_tag }}"
+          branch: release-draft
+          title: "Release ${{ steps.version.outputs.new_tag }}"
+          body: |
+            This PR prepares version `${{ steps.version.outputs.new_tag }}`.
+            - Updated version in `galaxy.yml`
+            - Generated changelog preview (fragments not yet archived)
+            - Draft release created
+
+      - name: Delete old drafts
+        uses: hugo19941994/delete-draft-releases@v2.0.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Create release draft
+        uses: softprops/action-gh-release@v2
+        with:
+          body_path: CHANGELOG.md
+          draft: true
+          name: ${{ steps.version.outputs.new_tag }}
+          tag_name: ${{ steps.version.outputs.new_tag }}
+          target_commitish: release-draft
