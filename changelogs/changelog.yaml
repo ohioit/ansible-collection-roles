@@ -1,3 +1,15 @@
 ---
 ancestor: null
-releases: {}
+releases:
+  0.0.0:
+    changes:
+      bugfixes:
+        - Testing workflows.
+      release_summary: 'This is a pre-release of the OhioIT Ansible roles collection.
+        Not for use.
+
+        '
+    fragments:
+      - 0.0.1.yml
+      - summary.yml
+    release_date: '2025-08-19'
