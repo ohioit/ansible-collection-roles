@@ -1,5 +1,6 @@
 ---
 add_plugin_period: true
+archive_path_template: changelogs/fragments/archive/{version}
 changelog_nice_yaml: true
 changelog_sort: version
 changes_file: changelog.yaml

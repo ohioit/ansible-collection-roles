@@ -3,13 +3,6 @@ name: Release Prepare
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - 'CHANGELOG.*'
-      - 'changelogs/**'
-      - 'galaxy.yml'
 
 jobs:
   prepare_release:
@@ -57,7 +50,7 @@ jobs:
 
       - name: Echo calculated version
         run: |
-          echo "version: ${{ steps.version.outputs.new_tag }}"
+          echo "New version is: ${{ steps.version.outputs.new_tag }}"
 
       - name: Update galaxy.yml version
         run: |
@@ -66,7 +59,7 @@ jobs:
 
       - name: Generate changelog
         run: |
-          antsibull-changelog generate
+          antsibull-changelog release
 
       - name: Commit updated files and open pull request
         uses: peter-evans/create-pull-request@v7
@@ -76,13 +69,14 @@ jobs:
             galaxy.yml
             CHANGELOG.*
             changelogs/changelog.yaml
+            changelogs/fragments/**
           commit-message: "Prepare release ${{ steps.version.outputs.new_tag }}"
-          branch: release-draft
+          branch: release/${{ steps.version.outputs.new_tag }}
           title: "Release ${{ steps.version.outputs.new_tag }}"
           body: |
             This PR prepares version `${{ steps.version.outputs.new_tag }}`.
             - Updated version in `galaxy.yml`
-            - Generated changelog preview (fragments not yet archived)
+            - Generated release changelog
             - Draft release created
 
       - name: Delete old drafts
@@ -97,4 +91,4 @@ jobs:
           draft: true
           name: ${{ steps.version.outputs.new_tag }}
           tag_name: ${{ steps.version.outputs.new_tag }}
-          target_commitish: release-draft
+          target_commitish: release/${{ steps.version.outputs.new_tag }}
