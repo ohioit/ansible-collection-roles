@@ -35,26 +35,6 @@ jobs:
         run: |
           antsibull-changelog release
 
-      - name: Create PR for archived fragments and changelog
-        id: create_pr
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ github.token }}
-          branch: release-fragments/${{ github.event.release.tag_name }}
-          title: "Archive changelog fragments for release ${{ github.event.release.tag_name }}"
-          body: |
-            This PR archives the changelog fragments used in release ${{ github.event.release.tag_name }}
-            and updates all changelog files.
-          add-paths: |
-            CHANGELOG.*
-            changelogs/changelog.yaml
-            changelogs/fragments/*
-
-      - name: Enable Pull Request Automerge
-        run: gh pr merge ${{ steps.create_pr.outputs.pull-request-number }} --merge --auto
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-
       - name: Build collection
         run: ansible-galaxy collection build
 
